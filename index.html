@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Santali eBook Bookshelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Noto+Sans+Ol+Chiki&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3ead9; --ink:#2b1d12; --muted:#7a6650; --wood:#8a5a34; --wood-d:#5e3a1e; --card:#fffaf0;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#1c1511; --ink:#f1e5d0; --muted:#b39b7d; --card:#2a2019;}
+}
+:root[data-theme="dark"]{--bg:#1c1511; --ink:#f1e5d0; --muted:#b39b7d; --card:#2a2019;}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;min-height:100vh}
+header{text-align:center;padding:40px 16px 10px}
+h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(28px,5vw,48px);margin:0 0 6px}
+.ol{font-family:'Noto Sans Ol Chiki','Nirmala UI',sans-serif;color:var(--muted);font-size:20px}
+p.sub{color:var(--muted);margin:8px auto 18px;max-width:560px}
+.tools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:0 16px 20px}
+input[type=search]{padding:10px 16px;border-radius:999px;border:1px solid var(--muted);background:var(--card);color:var(--ink);width:min(320px,100%);font-size:15px}
+a.btn,button.btn{padding:10px 18px;border-radius:999px;border:0;background:var(--wood-d);color:#fff;text-decoration:none;font-size:15px;cursor:pointer}
+main{max-width:1100px;margin:0 auto;padding:0 16px 60px}
+.shelf{position:relative;display:flex;align-items:flex-end;gap:3px;padding:0 18px;min-height:250px;margin-top:26px;
+  border-bottom:16px solid var(--wood);box-shadow:0 14px 0 -2px var(--wood-d),0 22px 24px -12px rgba(0,0,0,.45);
+  background:linear-gradient(to bottom,rgba(0,0,0,.07),transparent 40%);border-radius:4px 4px 0 0;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden}
+.book{flex:0 0 auto;position:relative;border:0;cursor:pointer;color:#fff;border-radius:3px 3px 1px 1px;
+  box-shadow:inset 3px 0 5px rgba(255,255,255,.18),inset -3px 0 6px rgba(0,0,0,.28),2px 0 3px rgba(0,0,0,.25);
+  display:flex;align-items:center;justify-content:center;padding:10px 0;transform-origin:bottom center;
+  transition:transform .25s ease, margin .25s ease}
+.book::before,.book::after{content:"";position:absolute;left:0;right:0;height:5px;background:rgba(255,255,255,.35)}
+.book::before{top:12px}.book::after{bottom:12px}
+.book span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Noto Sans Ol Chiki','Playfair Display',Georgia,serif;font-size:15px;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-height:calc(100% - 44px);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.book:hover,.book:focus-visible{transform:translateY(-22px) rotate(-3deg);margin:0 6px;outline:none}
+.hint{text-align:center;color:var(--muted);font-size:14px;margin-top:34px}
+.empty{text-align:center;color:var(--muted);padding:40px}
+dialog{border:0;border-radius:14px;background:var(--card);color:var(--ink);max-width:min(440px,92vw);padding:0;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.modal{padding:24px;display:flex;gap:18px;align-items:flex-start}
+.mini{width:56px;height:150px;border-radius:3px;flex:0 0 auto;box-shadow:inset 3px 0 5px rgba(255,255,255,.2),3px 3px 8px rgba(0,0,0,.4)}
+.modal h2{font-family:'Playfair Display',Georgia,serif;margin:0 0 4px;font-size:22px}
+.modal .meta{color:var(--muted);font-size:14px;margin-bottom:12px}
+.modal .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.close{background:transparent;color:var(--ink);border:1px solid var(--muted)}
+.reader{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.75);display:none;flex-direction:column;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.reader.on{display:flex}
+.rbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--wood-d);color:#fff}
+.rbar .sw{width:14px;height:34px;border-radius:2px;flex:0 0 auto}
+.rbar b{font-family:'Playfair Display',Georgia,serif;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rbar a,.rbar button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:999px;padding:8px 14px;font-size:14px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.rframe{flex:1;border:0;width:100%;background:#fff}
+.reader.on .book3d{animation:openUp .35s ease}
+@keyframes openUp{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 40px}
+</style>
+</head>
+<body>
+<header>
+  <div class="ol">ᱥᱟᱱᱛᱟᱲᱤ</div>
+  <h1>Santali eBook Shelf</h1>
+  <p class="sub">Books ko shelf par spine ke saath dekhiye. Kisi bhi kitab par click kijiye, wahi kitab seedha khul jayegi.</p>
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search title or author…" aria-label="Search books">
+    <a class="btn" id="folder" target="_blank" rel="noopener">📂 Open full Drive folder</a>
+  </div>
+</header>
+<main>
+  <div id="shelves"></div>
+  <p class="hint" id="hint"></p>
+</main>
+<footer>Sabhi books ka link Google Drive folder se hai.</footer>
+
+<div class="reader" id="reader" role="dialog" aria-modal="true">
+  <div class="rbar">
+    <div class="sw" id="rSw"></div>
+    <b id="rTitle"></b>
+    <a id="rNew" target="_blank" rel="noopener">Open in new tab ↗</a>
+    <button id="rClose">✕ Close</button>
+  </div>
+  <iframe class="rframe book3d" id="rFrame" title="Book viewer" allow="fullscreen"></iframe>
+</div>
+
+<script>
+/* ====== EDIT HERE ======
+   Drive folder ka link. Har book ka apna link ho to "link" me daaliye,
+   warna folder khulega. */
+const FOLDER = "https://drive.google.com/drive/folders/1K3ZZwnkfMlSnGJxwmZpxfzm8BdiobHgu?usp=sharing";
+
+/* Placeholder list: asli titles se replace kijiye. Har book ka Drive FILE link (…/file/d/ID/view) "link" me daaliye, tab click par wahi kitab khulegi. */
+const BOOKS = [
+  {title:"ᱵᱤᱫᱩ - ᱪᱟᱱᱫᱟᱱ", link:"https://drive.google.com/file/d/10h1kUwFx3xXwi-hj5KTln3qovgEw8uhV/view?usp=sharing"},
+  {title:"ᱦᱚᱨ ᱥᱮᱨᱮᱧ", author:"ᱯᱚᱸᱰᱮᱛ ᱨᱟᱹᱜᱷᱩᱱᱟᱛᱷ ᱢᱩᱨᱢᱩ", link:"https://drive.google.com/file/d/1bxE9t6srXHIXqAntn2rxxyGRsCLXpZfk/view?usp=sharing"},
+  {title:"ᱞᱟᱠᱪᱟᱨ ᱥᱮᱨᱮᱧ", link:"https://drive.google.com/file/d/1PUjBcPa9kIH3-01EJYGX2aIsndn7iafC/view?usp=sharing"},
+  {title:"ᱚᱞ ᱪᱮᱢᱮᱫ (A Santali Primer)", author:"ᱯᱚᱸᱰᱮᱛ ᱨᱟᱹᱜᱷᱩᱱᱟᱛ ᱢᱩᱨᱢᱩ", link:"https://drive.google.com/file/d/1QnXJq0rqk4n-Bjwi-d6UsqQM3Tog84BC/view?usp=sharing"},
+  {title:"Hital (ᱦᱤᱛᱟᱹᱞ)", link:"https://drive.google.com/file/d/1v-ljTn5HSw_6fSsvOQ2MKxLAgLjGD2ga/view?usp=sharing"}
+];
+/* ====================== */
+
+const PALETTE = ["#7b2d26","#2f4858","#3d5a40","#8a5a1f","#4a3b6b","#a23e48","#1f5f6b","#5b4636","#6b705c","#9c4a1a","#2b3a67","#7a3b5e"];
+const hash = s => [...s].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
+const $ = id => document.getElementById(id);
+$("folder").href = FOLDER;
+
+function spec(b,i){
+  const h = hash(b.title);
+  return { color: b.color || PALETTE[(h+i)%PALETTE.length],
+           height: 200 + (h%60),
+           width: 52 + ((h>>3)%22) };       // 38–59px
+}
+function render(list){
+  const wrap = $("shelves"); wrap.innerHTML = "";
+  if(!list.length){ wrap.innerHTML = '<div class="empty">Koi book nahi mili.</div>'; return; }
+  const perShelf = Math.max(6, Math.floor((Math.min(window.innerWidth,1100)-80)/50));
+  for(let s=0; s<list.length; s+=perShelf){
+    const shelf = document.createElement("div"); shelf.className="shelf";
+    list.slice(s,s+perShelf).forEach((b,i)=>{
+      const sp = spec(b,s+i);
+      const el = document.createElement("button");
+      el.className="book"; el.style.background=sp.color; el.style.height=sp.height+"px"; el.style.width=sp.width+"px";
+      el.title = b.title; el.setAttribute("aria-label", b.title+" by "+b.author);
+      el.innerHTML = "<span></span>"; el.firstChild.textContent = b.title;
+      el.onclick = () => openBook(b, sp);
+      shelf.appendChild(el);
+    });
+    wrap.appendChild(shelf);
+  }
+  $("hint").textContent = list.length + " book" + (list.length>1?"s":"") + " on the shelf";
+}
+function embedUrl(link){
+  let m = link.match(/\/file\/d\/([\w-]+)/) || link.match(/[?&]id=([\w-]+)/);
+  if(m && !/folders/.test(link)) return "https://drive.google.com/file/d/"+m[1]+"/preview";
+  m = link.match(/\/folders\/([\w-]+)/);
+  if(m) return "https://drive.google.com/embeddedfolderview?id="+m[1]+"#grid";
+  return link;
+}
+function openBook(b,sp){
+  const link = b.link || FOLDER;
+  $("rTitle").textContent = b.title;
+  $("rSw").style.background = sp.color;
+  $("rNew").href = link;
+  $("rFrame").src = embedUrl(link);
+  $("reader").classList.add("on");
+  document.body.style.overflow = "hidden";
+}
+function closeBook(){
+  $("reader").classList.remove("on");
+  $("rFrame").src = "about:blank";
+  document.body.style.overflow = "";
+}
+$("rClose").onclick = closeBook;
+document.addEventListener("keydown", e => { if(e.key==="Escape") closeBook(); });
+$("q").addEventListener("input", e => {
+  const t = e.target.value.toLowerCase().trim();
+  render(BOOKS.filter(b => (b.title+" "+(b.author||"")).toLowerCase().includes(t)));
+});
+let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(()=>render(BOOKS.filter(b=>(b.title+" "+(b.author||"")).toLowerCase().includes($("q").value.toLowerCase().trim()))),200); });
+render(BOOKS);
+</script>
+</body>
+</html>
